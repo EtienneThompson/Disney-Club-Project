@@ -14,31 +14,50 @@
           <v-row
             class="ma-0 pa-0"
             justify="center"
-            v-for="(row, index1) of tasks"
-            :key="row[0]"
+            v-for="(row, index1) of cards"
+            :key="'row ' + index1"
           >
-            <div v-for="(item, index2) in row" :key="item">
+            <div v-for="(item, index2) in row" :key="item.text">
               <v-card class="ma-0 pa-0" outlined>
+                <!-- Front face -->
                 <v-btn
-                  class="btn-wrap no-text-transform"
+                  class="btn-wrap no-text-transform front"
+                  @click="transition(index1, index2)"
+                  v-bind:id="index1 + '-' + index2"
                   :height="button_height"
                   :width="button_width"
+                  v-if="!item.flipped"
                 >
+                  <!-- Mobile text -->
                   <span
-                    class="disney-text mobile"
-                    :style="{ color:colors[index1][index2] }"
+                    class="disney-text mobile front"
+                    :style="{ color:item.color }"
                     v-if="windowSize < 500"
                   >
-                    {{ item }}
+                    {{ item.text }}
                   </span>
+                  <!-- Tablet, Laptop, and Desktop text -->
                   <span
-                    class="disney-text desktop"
-                    :style="{ color:colors[index1][index2] }"
+                    class="disney-text desktop front"
+                    :style="{ color:item.color }"
                     v-else
                   >
-                    {{ item }}
+                    {{ item.text }}
                   </span>
                 </v-btn>
+
+                <!-- Back face -->
+                <div
+                  :style="{ height:button_height + 'px', width:button_width + 'px' }"
+                  v-if="item.flipped && !item.upload"
+                >
+                  <v-file-input
+                    @change="fileUploaded"
+                    hide-input
+                    v-model="file"
+                  >
+                  </v-file-input>
+                </div>
               </v-card>
             </div>
           </v-row>
@@ -49,66 +68,43 @@
 </template>
 
 <script>
+
+import api from "@/api";
+import bingoCards from "./json/bingo_options.json"
+
 export default {
+  components: {
+  },
   data: function() {
     return {
-      tasks: [
-        [
-          "Watched Nightmare Before Christmas",
-          "Made a Jack-O-Lantern",
-          "Watched Hocus Pocus",
-          "Wore Mickey Ears for a Day",
-          "Halloween Craft"
-        ],
-        [
-          "Entered A Contest",
-          "Made a Halloween Treat",
-          "Went to Disney Club!!!",
-          "Bought Disney Halloween Merch",
-          "Watched Haunted Mansion"
-        ],
-        [
-          "Viewed Disney Club Insta Story",
-          "Wore A Mask And Social Distanced",
-          "Free",
-          "Disney Costume",
-          "Temp Below 60"
-        ],
-        [
-          "Took A Test",
-          "Watched 5 Things On Disney Plus",
-          "Watched A Scary Movie on Halloween",
-          "Bought a Bag of Candy",
-          "Pulled a Prank"
-        ],
-        [
-          "Anything Involving A Pumpkin",
-          "Sent Disney Club a Halloween Picture",
-          "Drew a Disney Character",
-          "Played Villainous",
-          "Participation in a Disney Club Poll"
-        ],
-      ],
-      colors: [
-        ["orange", "black", "orange", "black", "orange"],
-        ["black", "orange", "black", "orange", "black"],
-        ["orange", "black", "orange", "black", "orange"],
-        ["black", "orange", "black", "orange", "black"],
-        ["orange", "black", "orange", "black", "orange"],
-      ],
+      // Set the cards accoring to what's in the json file.
+      cards: bingoCards,
       windowSize: 0,
       button_height: 0,
       button_width: 0,
+      file: null,
     };
   },
   methods: {
+    fileUploaded: function() {
+      console.log(this.file);
+      let formData = new FormData();
+      formData.append("file", this.file);
+
+      api.post("upload", formData);
+    },
     resize: function() {
       this.windowSize = window.innerWidth;
-      console.log(this.windowSize)
       this.button_width = (this.windowSize - 25) / 5;
       this.button_height = this.button_width;
-      console.log(this.button_width);
-      console.log(this.button_height);
+    },
+    transition: function(index1, index2) {
+      // Don't flip if the card has already been flipped.
+      if (this.cards[index1][index2].flipped) {
+        return;
+      }
+      this.cards[index1][index2].flipped = true;
+      document.getElementById(`${index1}-${index2}`).classList.toggle("flip");
     }
   },
   mounted: function() {
@@ -140,5 +136,15 @@ export default {
 
   // Make button content able to wrap.
   .v-btn__content { width: 100%; white-space: normal; }
+
+  // Setup horizontal flip transition.
+  .flip {
+    transform: rotateY(180deg);
+    transition: 0.4s;
+  }
+
+  .front, .back {
+    backface-visibility: hidden;
+  }
 
 </style>
