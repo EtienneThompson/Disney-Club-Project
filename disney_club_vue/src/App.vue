@@ -101,6 +101,11 @@ export default {
       api.post("upload", formData);
 
       this.cards[index1][index2].upload = this.file.name;
+      let payload = {
+        filename: "/json/games/bingo/bingo_options.json",
+        json: this.cards,
+      }
+      api.post("write", payload);
     },
     resize: function() {
       this.windowSize = window.innerWidth;
