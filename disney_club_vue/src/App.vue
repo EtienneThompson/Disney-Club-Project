@@ -26,7 +26,7 @@
                   v-bind:id="index1 + '-' + index2"
                   :height="button_height"
                   :width="button_width"
-                  v-if="!item.flipped"
+                  v-if="!item.flipped && !item.upload"
                 >
                   <!-- Mobile text -->
                   <span
@@ -52,11 +52,19 @@
                   v-if="item.flipped && !item.upload"
                 >
                   <v-file-input
-                    @change="fileUploaded"
+                    @change="fileUploaded(index1, index2)"
                     hide-input
                     v-model="file"
                   >
                   </v-file-input>
+                </div>
+
+                <!-- Uploaded image -->
+                <div
+                  :style="{ height:button_height + 'px', width:button_width + 'px' }"
+                  v-if="item.flipped && item.upload"
+                >
+                  <v-img :src="require(`./resources/static/assets/uploads/${item.upload}`)"></v-img>
                 </div>
               </v-card>
             </div>
@@ -70,7 +78,7 @@
 <script>
 
 import api from "@/api";
-import bingoCards from "./json/bingo_options.json"
+import bingoCards from "@/json/games/bingo/bingo_options.json"
 
 export default {
   components: {
@@ -86,12 +94,13 @@ export default {
     };
   },
   methods: {
-    fileUploaded: function() {
-      console.log(this.file);
+    fileUploaded: function(index1, index2) {
       let formData = new FormData();
       formData.append("file", this.file);
 
       api.post("upload", formData);
+
+      this.cards[index1][index2].upload = this.file.name;
     },
     resize: function() {
       this.windowSize = window.innerWidth;

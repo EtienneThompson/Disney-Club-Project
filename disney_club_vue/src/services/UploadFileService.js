@@ -5,7 +5,7 @@ var util = require("util");
 var cors = require("cors");
 
 const baseUrl = "http://localhost:8080/files/";
-const __basedir = __dirname + "/../../";
+const __basedir = __dirname + "/../";
 
 /*
 * Setup middleware for file uploading.
