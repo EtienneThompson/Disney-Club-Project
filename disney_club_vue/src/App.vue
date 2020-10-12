@@ -4,11 +4,42 @@
       <v-row justify="center">
         <v-card outlined>
           <!-- Title -->
-          <v-row justify="center">
+          <v-row align="center" justify="center">
+            <v-spacer></v-spacer>
             <v-card-title class="disney-text">
               Welcome to Disney Club's Bingo Game
             </v-card-title>
+            <v-spacer></v-spacer>
+            <v-btn
+              class="mr-10"
+              @click="open_login_alert = true"
+            >
+              Login
+            </v-btn>
           </v-row>
+
+          <!-- Login Popup -->
+          <v-dialog v-model="open_login_alert" width="500">
+            <v-card class="pa-5">
+              <v-flex>
+                <v-card-title>
+                  Enter your netid
+                </v-card-title>
+                <v-row>
+                  <v-col>
+                    <v-text-field v-model="netid" label="netid"></v-text-field>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <v-btn @click="login()">
+                      Enter
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-flex>
+            </v-card>
+          </v-dialog>
 
           <!-- Bingo Board -->
           <v-row
@@ -64,7 +95,11 @@
                   :style="{ height:button_height + 'px', width:button_width + 'px' }"
                   v-if="item.flipped && item.upload"
                 >
-                  <v-img :src="require(`./resources/static/assets/uploads/${item.upload}`)"></v-img>
+                  <v-img
+                    position="center center"
+                    :src="require(`./resources/static/assets/uploads/${item.upload}`)"
+                  >
+                  </v-img>
                 </div>
               </v-card>
             </div>
@@ -91,6 +126,8 @@ export default {
       button_height: 0,
       button_width: 0,
       file: null,
+      open_login_alert: false,
+      netid: "",
     };
   },
   methods: {
@@ -101,11 +138,24 @@ export default {
       api.post("upload", formData);
 
       this.cards[index1][index2].upload = this.file.name;
+      let filepath = this.netid
+        ? `json/games/bingo/${this.netid}/bingo_options.json`
+        : "json/games/bingo/bingo_options.json";
       let payload = {
-        filename: "/json/games/bingo/bingo_options.json",
+        filename: filepath,
         json: this.cards,
       }
       api.post("write", payload);
+    },
+    login: function() {
+      this.open_login_alert = false;
+      console.log(this.netid);
+
+      api.get("find", { params: { netid: this.netid } })
+        .then((response) => {
+          this.cards = JSON.parse(response.data);
+        })
+        .catch((error) => { console.log(error) });
     },
     resize: function() {
       this.windowSize = window.innerWidth;
@@ -113,6 +163,10 @@ export default {
       this.button_height = this.button_width;
     },
     transition: function(index1, index2) {
+      if (!this.netid) {
+        // Don't let users interact with the board if they're not logged in.
+        return;
+      }
       // Don't flip if the card has already been flipped.
       if (this.cards[index1][index2].flipped) {
         return;

@@ -20,20 +20,9 @@ var imageStorage = multer.diskStorage({
     }
 });
 
-var jsonStorage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        cb(null, __basedir + "json/games/bingo/");
-    },
-    filename: function(req, file, cb) {
-        cb(null, file.originalname);
-    }
-});
-
 var uploadFile = multer({ storage: imageStorage }).single("file");
-var jsonFile = multer({ storage: jsonStorage }).single("file")
 
 let uploadFileMiddleware = util.promisify(uploadFile);
-let jsonFileMiddleware = util.promisify(jsonFile);
 
 /*
 * Setup controller.
@@ -89,41 +78,27 @@ const writeJSON = (req, res) => {
     }
 };
 
-const getListFiles = (req, res) => {
-    const directoryPath = __basedir + "/resources/static/assets/uploads/";
-
-    fs.readdir(directoryPath, (err, files) => {
-        if (err) {
-            res.status(500).send({
-                message: "Unable to scan files!"
-            });
-        }
-
-        let fileInfos = [];
-
-        files.forEach((file) => {
-            fileInfos.push({
-                name: file,
-                url: baseUrl + file,
-            });
-        });
-
-        res.status(200).send(fileInfos);
-    });
-};
-
-const download = (req, res) => {
-    const fileName = req.params.name;
-    const directoryPath = __basedir + "/resources/static/assets/uploads/";
-
-    res.download(directoryPath + fileName, fileName, (err) => {
-        if (err) {
-            res.status(500).send({
-                message: "Could not download the file. " + err,
+const findJSON = (req, res) => {
+    let netid = req.query.netid;
+    fs.access(__basedir + `json/games/bingo/${netid}`, function(error) {
+        if (error) {
+            console.log("no directory");
+            return res.status(404).send({
+                message: "User's json file not found and directory has not been made."
             });
         }
     });
-};
+    console.log("directory found");
+    fs.readFile(__basedir + `json/games/bingo/${netid}/bingo_options.json`, 'utf-8', function(err, data) {
+        if (err) {
+            console.log("no file");
+            return res.status(404).send({
+                message: "User's json file not found, but directory has been made."
+            });
+        }
+        return res.status(200).send(JSON.stringify(data));
+    })
+}
 
 /*
 * Setup server to receive requests.
@@ -133,11 +108,10 @@ const router = express.Router();
 let routes = (app) => {
     router.post("/upload", upload);
     router.post("/write", writeJSON);
-    router.get("/files", getListFiles);
-    router.get("/files/:name", download);
+    router.get("/find", findJSON);
 
     app.use(router);
-}
+};
 
 const app = express();
 
