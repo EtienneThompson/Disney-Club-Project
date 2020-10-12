@@ -151,6 +151,16 @@ export default {
       this.open_login_alert = false;
       console.log(this.netid);
 
+      api.get("user", { params: { netid: this.netid } })
+        .then(() => {
+          // User does exist, so we don't want to do anything.
+        })
+        .catch(() => {
+          // User does not exist, so we want to create them.
+          api.post("new", this.netid);
+        })
+
+      // Get the user's json configuration.
       api.get("find", { params: { netid: this.netid } })
         .then((response) => {
           this.cards = JSON.parse(response.data);

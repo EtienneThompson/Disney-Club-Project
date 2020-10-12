@@ -78,26 +78,64 @@ const writeJSON = (req, res) => {
     }
 };
 
-const findJSON = (req, res) => {
+const newUser = (req, res) => {
+    let netid = Object.keys(req.body)[0];
+    // Create the directory.
+    let status;
+    fs.mkdir(__basedir + `json/games/bingo/${netid}`, (err) => {
+        if (err) {
+            status = 500;
+        }
+    });
+
+    fs.copyFile(__basedir + "json/games/bingo/bingo_options.json", __basedir + `json/games/bingo/${netid}/bingo_options.json`, (err) => {
+        if (err) {
+            status = 500;
+        }
+        console.log("File written");
+    })
+    // Read the original bingo_options file.
+    // Write that to the bingo_options file in the user directory.
+    // Copying might be easier.
+    if (status === 500) {
+        return res.status(500).send({
+            message: "Directory or file could not be created."
+        });
+    }
+    return res.status(200).send(" File made.");
+}
+
+const findUser = (req, res) => {
     let netid = req.query.netid;
     fs.access(__basedir + `json/games/bingo/${netid}`, function(error) {
         if (error) {
             console.log("no directory");
-            return res.status(404).send({
-                message: "User's json file not found and directory has not been made."
-            });
+            return res.status(404).send({ message: "User does not exist." });
         }
+        return res.status(200).send({ message: "User exists." });
+    });
+}
+
+const findJSON = (req, res) => {
+    let netid = req.query.netid;
+    let status;
+    fs.access(__basedir + `json/games/bingo/${netid}`, function(error) {
+        if (error) {
+            status = 404;
+        };
     });
     console.log("directory found");
-    fs.readFile(__basedir + `json/games/bingo/${netid}/bingo_options.json`, 'utf-8', function(err, data) {
-        if (err) {
-            console.log("no file");
+    fs.readFile(__basedir + `json/games/bingo/${netid}/bingo_options.json`, 'utf-8', function(error, data) {
+        if (error) {
+            status = 404;
+        };
+        if (status === 404) {
             return res.status(404).send({
-                message: "User's json file not found, but directory has been made."
+                message: "User's json file not found and/or directory has not been made."
             });
         }
         return res.status(200).send(JSON.stringify(data));
-    })
+    });
 }
 
 /*
@@ -108,6 +146,8 @@ const router = express.Router();
 let routes = (app) => {
     router.post("/upload", upload);
     router.post("/write", writeJSON);
+    router.post("/new", newUser);
+    router.get("/user", findUser);
     router.get("/find", findJSON);
 
     app.use(router);
