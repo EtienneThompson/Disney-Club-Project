@@ -1,11 +1,7 @@
 var fs = require("fs");
-var express = require("express");
-var bodyParser = require("body-parser");
 var multer = require("multer");
 var util = require("util");
-var cors = require("cors");
 
-const baseUrl = "http://localhost:8080/files/";
 const __basedir = __dirname + "/../";
 
 /*
@@ -13,7 +9,7 @@ const __basedir = __dirname + "/../";
 */
 var imageStorage = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, __basedir + "resources/static/assets/uploads/");
+        cb(null, __basedir + "images/games/bingo");
     },
     filename: function(req, file, cb) {
         cb(null, file.originalname);
@@ -125,7 +121,8 @@ const findJSON = (req, res) => {
         };
     });
     console.log("directory found");
-    fs.readFile(__basedir + `json/games/bingo/${netid}/bingo_options.json`, 'utf-8', function(error, data) {
+    console.log(__basedir + "json/games/bingo/" + (netid ? `${netid}/` : "") + "bingo_options.json");
+    fs.readFile(__basedir + "json/games/bingo/" + (netid ? `${netid}/` : "") + "bingo_options.json", 'utf-8', function(error, data) {
         if (error) {
             status = 404;
         };
@@ -138,35 +135,4 @@ const findJSON = (req, res) => {
     });
 }
 
-/*
-* Setup server to receive requests.
-*/
-const router = express.Router();
-
-let routes = (app) => {
-    router.post("/upload", upload);
-    router.post("/write", writeJSON);
-    router.post("/new", newUser);
-    router.get("/user", findUser);
-    router.get("/find", findJSON);
-
-    app.use(router);
-};
-
-const app = express();
-
-var corsOptions = {
-    origin: "http://localhost:8081"
-};
-
-app.use(cors(corsOptions));
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.urlencoded({ extended: true }));
-routes(app);
-
-let port = 8080;
-app.listen(port, () => {
-    console.log(`Running at localhost:${port}`);
-})
+module.exports = { upload, writeJSON, newUser, findUser, findJSON };

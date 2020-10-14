@@ -1,4 +1,5 @@
-bingo/*/bingo_options.json
+disney_club_api/images/games/bingo/*
+disney_club_api/json/games/bingo/*/bingo_options.json
 
 # Logs
 logs

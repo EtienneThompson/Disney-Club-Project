@@ -97,7 +97,7 @@
                 >
                   <v-img
                     position="center center"
-                    :src="require(`./resources/static/assets/uploads/${item.upload}`)"
+                    :src="require(`../../disney_club_api/images/games/bingo/${item.upload}`)"
                   >
                   </v-img>
                 </div>
@@ -113,7 +113,6 @@
 <script>
 
 import api from "@/api";
-import bingoCards from "@/json/games/bingo/bingo_options.json"
 
 export default {
   components: {
@@ -121,7 +120,7 @@ export default {
   data: function() {
     return {
       // Set the cards accoring to what's in the json file.
-      cards: bingoCards,
+      cards: [],
       windowSize: 0,
       button_height: 0,
       button_width: 0,
@@ -186,6 +185,13 @@ export default {
     }
   },
   mounted: function() {
+    api.get("find", { params: { netid: "" } })
+      .then((response) => {
+        // console.log(response);
+        this.cards = JSON.parse(response.data)
+      })
+      .catch((error) => console.log(error));
+
     this.resize();
     window.addEventListener("resize", this.resize, { passive: true });
   }
