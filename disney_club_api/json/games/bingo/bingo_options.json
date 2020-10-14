@@ -78,9 +78,9 @@
         },
         {
             "text": "Free",
-            "flipped": false,
+            "flipped": true,
             "color": "orange",
-            "upload": ""
+            "upload": "free.jpg"
         },
         {
             "text": "Disney Costume",
