@@ -3,11 +3,11 @@ var bodyParser = require("body-parser");
 var cors = require("cors");
 var FileService = require("./services/FileServices");
 
-/*
-* Setup server to receive requests.
-*/
 const router = express.Router();
 
+/*
+* Setup api routes.
+*/
 let routes = (app) => {
     router.post("/upload", FileService.upload);
     router.post("/write", FileService.writeJSON);
@@ -24,6 +24,9 @@ var corsOptions = {
     origin: "http://localhost:8081"
 };
 
+/*
+* Setup server to receive requests.
+*/
 app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
