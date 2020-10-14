@@ -21,7 +21,7 @@ let routes = (app) => {
 const app = express();
 
 var corsOptions = {
-    origin: "https://disney-club-project.herokuapp.com"
+    origin: "https://etiennethompson.com"
 };
 
 /*
