@@ -32,9 +32,11 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
+// Setup directory as static image server.
+app.use("/images", express.static("images"));
 routes(app);
 
 let port = process.env.PORT || 8080;
 app.listen(port, () => {
-    console.log(`Running at localhost:${port}`);
+    console.log(`Running at ${port}`);
 })

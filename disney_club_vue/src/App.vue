@@ -97,7 +97,7 @@
                 >
                   <v-img
                     position="center center"
-                    :src="require(`../../disney_club_api/images/games/bingo/${item.upload}`)"
+                    :src="`https://disney-club-project.herokuapp.com/images/games/bingo/${item.upload}`"
                   >
                   </v-img>
                 </div>
@@ -138,8 +138,8 @@ export default {
 
       this.cards[index1][index2].upload = this.file.name;
       let filepath = this.netid
-        ? `json/games/bingo/${this.netid}/bingo_options.json`
-        : "json/games/bingo/bingo_options.json";
+        ? `/json/games/bingo/${this.netid}/bingo_options.json`
+        : "/json/games/bingo/bingo_options.json";
       let payload = {
         filename: filepath,
         json: this.cards,
@@ -164,6 +164,11 @@ export default {
         .then((response) => {
           this.cards = JSON.parse(response.data);
         })
+        .catch((error) => { console.log(error) });
+    },
+    getPhoto(file) {
+      api.get("photo", { params: { photo: file } })
+        .then((response) => { console.log(response) })
         .catch((error) => { console.log(error) });
     },
     resize: function() {
