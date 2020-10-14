@@ -134,17 +134,22 @@ export default {
       let formData = new FormData();
       formData.append("file", this.file);
 
-      api.post("upload", formData);
+      api.post("upload", formData)
+      .then(() => {
+        // Update the json configuration once a response has been sent.
+        this.cards[index1][index2].upload = this.file.name;
 
-      this.cards[index1][index2].upload = this.file.name;
-      let filepath = this.netid
+        let filepath = this.netid
         ? `/json/games/bingo/${this.netid}/bingo_options.json`
         : "/json/games/bingo/bingo_options.json";
-      let payload = {
-        filename: filepath,
-        json: this.cards,
-      }
-      api.post("write", payload);
+        let payload = {
+          filename: filepath,
+          json: this.cards,
+        }
+        // Then update the configuration file on the server to match the
+        // current instance.
+        api.post("write", payload);
+      });
     },
     login: function() {
       this.open_login_alert = false;

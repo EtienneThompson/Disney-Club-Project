@@ -22,6 +22,7 @@ const app = express();
 
 var corsOptions = {
     origin: "http://etiennethompson.com"
+    // origin: "http://localhost:8081"
 };
 
 /*
