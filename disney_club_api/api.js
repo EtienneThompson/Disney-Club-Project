@@ -31,7 +31,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
 routes(app);
 
-let port = 8080;
+let port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log(`Running at localhost:${port}`);
 })

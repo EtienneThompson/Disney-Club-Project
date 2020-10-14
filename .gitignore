@@ -1,4 +1,6 @@
+# All images uploaded for bingo.
 disney_club_api/images/games/bingo/*
+# All user configuration files.
 disney_club_api/json/games/bingo/*/bingo_options.json
 
 # Logs

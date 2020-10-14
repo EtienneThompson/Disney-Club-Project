@@ -5,6 +5,7 @@
   "main": "api.js",
   "scripts": {
     "test": "npm run test",
+    "start": "node api.js",
     "upload": " node api.js"
   },
   "repository": {
