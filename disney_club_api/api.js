@@ -21,7 +21,7 @@ let routes = (app) => {
 const app = express();
 
 var corsOptions = {
-    origin: "https://etiennethompson.com"
+    origin: "http://etiennethompson.com"
 };
 
 /*
