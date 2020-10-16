@@ -83,7 +83,7 @@
                   v-if="item.flipped && !item.upload"
                 >
                   <v-file-input
-                    @change="fileUploaded(index1, index2)"
+                    @change="fileUploaded(item, index1, index2)"
                     hide-input
                     v-model="file"
                   >
@@ -97,9 +97,18 @@
                 >
                   <v-img
                     position="center center"
-                    :src="`https://disney-club-project.herokuapp.com/images/games/bingo/${item.upload}`"
+                    src="http://localhost:8080/images/games/bingo/free.jpg"
+                    v-if="index1 === 2 && index2 === 2"
                   >
                   </v-img>
+                  <v-img
+                    position="center center"
+                    :src="`http://localhost:8080/images/games/bingo/${photos[index1][index2]}`"
+                    :key="photos[index1][index2]"
+                    v-else
+                  >
+                  </v-img>
+                  <div :key="refresh"></div>
                 </div>
               </v-card>
             </div>
@@ -115,7 +124,16 @@
 import api from "@/api";
 
 export default {
-  components: {
+  computed: {
+    photos: function() {
+      return ([
+        ["", "", "", "", ""],
+        ["", "", "", "", ""],
+        ["", "", "", "", ""],
+        ["", "", "", "", ""],
+        ["", "", "", "", ""],
+      ])
+    },
   },
   data: function() {
     return {
@@ -127,10 +145,11 @@ export default {
       file: null,
       open_login_alert: false,
       netid: "",
+      refresh: false,
     };
   },
   methods: {
-    fileUploaded: function(index1, index2) {
+    fileUploaded: function(item, index1, index2) {
       let formData = new FormData();
       formData.append("file", this.file);
 
@@ -140,41 +159,59 @@ export default {
         this.cards[index1][index2].upload = this.file.name;
 
         let filepath = this.netid
-        ? `/json/games/bingo/${this.netid}/bingo_options.json`
-        : "/json/games/bingo/bingo_options.json";
+        ? `json/games/bingo/${this.netid}/bingo_options.json`
+        : "json/games/bingo/bingo_options.json";
         let payload = {
           filename: filepath,
           json: this.cards,
-        }
+        };
         // Then update the configuration file on the server to match the
         // current instance.
         api.post("write", payload);
+        api.get("photo", { params: { photo: this.file } })
+        .then((response) => {
+          this.photos[index1][index2] = response.data;
+        })
+        .catch((error) => { console.log(error) });
       });
     },
     login: function() {
       this.open_login_alert = false;
-      console.log(this.netid);
 
       api.get("user", { params: { netid: this.netid } })
         .then(() => {
           // User does exist, so we don't want to do anything.
+          // Get the user's json configuration.
+          api.get("find", { params: { netid: this.netid } })
+            .then(async (response) => {
+              this.cards = JSON.parse(response.data);
+
+              for (let [index1, row] of this.cards.entries()) {
+                for (let [index2, item] of row.entries()) {
+                  if (item.upload) {
+                    api.get("photo", { params: { photo: item.upload } })
+                    .then((response) => {
+                      this.photos[index1][index2] = response.data;
+                    })
+                    .catch((error) => { console.log(error) });
+                  }
+                }
+              }
+              setTimeout(() => { this.refresh = true; }, 2000);
+            })
+            .catch((error) => { console.log(error) });
         })
         .catch(() => {
           // User does not exist, so we want to create them.
-          api.post("new", this.netid);
+          api.post("new", this.netid).then(() => {
+            // Get the user's json configuration.
+            api.get("find", { params: { netid: this.netid } })
+              .then((response) => {
+                this.cards = JSON.parse(response.data);
+              })
+              .catch((error) => { console.log(error) });
+          });
         })
-
-      // Get the user's json configuration.
-      api.get("find", { params: { netid: this.netid } })
-        .then((response) => {
-          this.cards = JSON.parse(response.data);
-        })
-        .catch((error) => { console.log(error) });
-    },
-    getPhoto(file) {
-      api.get("photo", { params: { photo: file } })
-        .then((response) => { console.log(response) })
-        .catch((error) => { console.log(error) });
     },
     resize: function() {
       this.windowSize = window.innerWidth;
@@ -197,7 +234,6 @@ export default {
   mounted: function() {
     api.get("find", { params: { netid: "" } })
       .then((response) => {
-        // console.log(response);
         this.cards = JSON.parse(response.data)
       })
       .catch((error) => console.log(error));

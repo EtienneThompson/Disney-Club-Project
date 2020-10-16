@@ -1,7 +1,9 @@
 var express = require("express");
+var fileUpload = require("express-fileupload");
 var bodyParser = require("body-parser");
 var cors = require("cors");
 var FileService = require("./services/FileServices");
+require("dotenv").config();
 
 const router = express.Router();
 
@@ -14,22 +16,23 @@ let routes = (app) => {
     router.post("/new", FileService.newUser);
     router.get("/user", FileService.findUser);
     router.get("/find", FileService.findJSON);
+    router.get("/photo", FileService.findImage);
 
     app.use(router);
 };
 
-const app = express();
-
 var corsOptions = {
-    origin: "http://etiennethompson.com"
-    // origin: "http://localhost:8081"
+    origin: `http://${process.env.ORIGIN}`,
 };
+
+const app = express();
 
 /*
 * Setup server to receive requests.
 */
 app.use(cors(corsOptions));
 
+app.use(fileUpload({ createParentPath: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
@@ -39,5 +42,5 @@ routes(app);
 
 let port = process.env.PORT || 8080;
 app.listen(port, () => {
-    console.log(`Running at ${port}`);
+    console.log(`Running at port ${port}`);
 })
