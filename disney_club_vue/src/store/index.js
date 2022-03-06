@@ -1,19 +1,25 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from "vue";
+import Vuex from "vuex";
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    netid: "",
+    clientId: "",
+    isUser: "",
+    isAdmin: "",
   },
   mutations: {
-    setNetid(state, n) {
-      state.netid = n;
-    }
+    setClientId(state, n) {
+      state.clientId = n;
+    },
+    setIsUser(state, u) {
+      state.isUser = u;
+    },
+    setIsAdmin(state, a) {
+      state.isAdmin = a;
+    },
   },
-  actions: {
-  },
-  modules: {
-  }
-})
+  actions: {},
+  modules: {},
+});
